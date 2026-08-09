@@ -2,6 +2,12 @@
 
 All notable changes to VideoPocket are documented here.
 
+## 0.3.2 - 2026-08-09
+
+- Moved all platform folders under `VideoPocket/downloads/`.
+- Added automatic migration from the legacy `VideoPocket/` download destination.
+- Updated the Mac app's Open Downloads action to open the organized downloads folder.
+
 ## 0.3.1 - 2026-08-09
 
 - Organized downloads into source folders: `x`, `fb`, `ig`, `linkedin`, and `youtube`.

@@ -131,7 +131,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             DispatchQueue.main.async {
                 self.installButton.isEnabled = true
                 if process.terminationStatus == 0 {
-                    self.showAlert(title: "VideoPocket is ready", message: "The Chrome extension will pair automatically. Downloads are saved in your Downloads/VideoPocket folder.")
+                    self.showAlert(title: "VideoPocket is ready", message: "The Chrome extension will pair automatically. Downloads are organized under Downloads/VideoPocket/downloads.")
                     self.refreshStatus()
                 } else if process.terminationStatus == 20 {
                     self.showAlert(title: "Homebrew is required", message: "Install Homebrew from brew.sh, then reopen VideoPocket Helper.")
@@ -152,7 +152,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openDownloadsFolder() {
-        let folder = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads/VideoPocket")
+        let folder = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads/VideoPocket/downloads")
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         NSWorkspace.shared.open(folder)
     }

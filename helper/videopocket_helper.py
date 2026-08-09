@@ -12,10 +12,18 @@ CONFIG_PATH = ROOT / "config.json"
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
 
 def config():
+    default_download_dir = Path.home()/"Downloads"/"VideoPocket"/"downloads"
     if not CONFIG_PATH.exists():
-        CONFIG_PATH.write_text(json.dumps({"token": secrets.token_urlsafe(24), "download_dir": str(Path.home()/"Downloads"/"VideoPocket")}, indent=2)+"\n")
+        CONFIG_PATH.write_text(json.dumps({"token": secrets.token_urlsafe(24), "download_dir": str(default_download_dir)}, indent=2)+"\n")
         os.chmod(CONFIG_PATH, 0o600)
-    return json.loads(CONFIG_PATH.read_text())
+    cfg = json.loads(CONFIG_PATH.read_text())
+    legacy_download_dir = Path.home()/"Downloads"/"VideoPocket"
+    configured_dir = Path(cfg.get("download_dir", default_download_dir)).expanduser()
+    if configured_dir == legacy_download_dir:
+        cfg["download_dir"] = str(default_download_dir)
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2)+"\n")
+        os.chmod(CONFIG_PATH, 0o600)
+    return cfg
 
 def allowed_url(value: str) -> bool:
     try:

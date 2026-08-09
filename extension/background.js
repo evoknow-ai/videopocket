@@ -53,7 +53,7 @@ async function pairHelper() {
 async function directDownload(url, title, pageUrl) {
   const date = new Date().toISOString().slice(0, 10);
   const compactTitle = safeName(title).slice(0, 50).replace(/\s+/g, "-");
-  const filename = `VideoPocket/${sourceKey(pageUrl)}/${date}-${compactTitle}-${mediaId(pageUrl)}.mp4`;
+  const filename = `VideoPocket/downloads/${sourceKey(pageUrl)}/${date}-${compactTitle}-${mediaId(pageUrl)}.mp4`;
   return chrome.downloads.download({ url, filename, conflictAction: "uniquify", saveAs: false });
 }
 

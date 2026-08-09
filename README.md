@@ -20,7 +20,7 @@ The helper improves Facebook, Instagram, X and YouTube support by combining sepa
 
 ### Signed DMG release
 
-Public releases use `VideoPocket-Mac-0.3.1.dmg`. Open the DMG, drag **VideoPocket Helper** to Applications, launch it, and click **Install Helper**. The application pairs with Chrome automatically.
+Public releases use `VideoPocket-Mac-0.3.2.dmg`. Open the DMG, drag **VideoPocket Helper** to Applications, launch it, and click **Install Helper**. The application pairs with Chrome automatically.
 
 Maintainers with the EVOKNOW Developer ID certificate and `VideoPocketNotary` Keychain profile can build, sign, notarize, staple, and verify the DMG with:
 
@@ -33,8 +33,8 @@ The completed DMG appears under `dist/`.
 Downloads are organized automatically by source, for example:
 
 ```text
-~/Downloads/VideoPocket/x/2026-08-09-account-123456789.mp4
-~/Downloads/VideoPocket/fb/2026-08-09-account-987654321.mp4
+~/Downloads/VideoPocket/downloads/x/2026-08-09-account-123456789.mp4
+~/Downloads/VideoPocket/downloads/fb/2026-08-09-account-987654321.mp4
 ```
 
 ### Source installer fallback
