@@ -2,6 +2,14 @@
 
 All notable changes to VideoPocket are documented here.
 
+## 0.3.0 - 2026-08-09
+
+- Added the native VideoPocket Helper Mac application.
+- Added universal Apple Silicon and Intel builds.
+- Added Developer ID signing, hardened runtime, notarization, stapling, and verification.
+- Added a distributable DMG with drag-to-Applications installation.
+- Added a graphical helper installer and health status.
+
 ## 0.2.1 - 2026-08-08
 
 - Added the Credits & About page.

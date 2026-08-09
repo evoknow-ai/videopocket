@@ -18,6 +18,20 @@ A private Chrome extension that saves videos you own or have permission to downl
 
 The helper improves Facebook, Instagram, X and YouTube support by combining separate audio and video streams into an MP4.
 
+### Signed DMG release
+
+Public releases use `VideoPocket-Mac-0.3.0.dmg`. Open the DMG, drag **VideoPocket Helper** to Applications, launch it, and click **Install Helper**. The application pairs with Chrome automatically.
+
+Maintainers with the EVOKNOW Developer ID certificate and `VideoPocketNotary` Keychain profile can build, sign, notarize, staple, and verify the DMG with:
+
+```bash
+./macos/build_release.sh
+```
+
+The completed DMG appears under `dist/`.
+
+### Source installer fallback
+
 1. Open the `helper` folder.
 2. Control-click or right-click **Install VideoPocket.command**, choose **Open**, then confirm **Open**. This first-launch step is required because the current installer is not yet Apple-notarized.
 3. Wait for the **VideoPocket is ready** notification.

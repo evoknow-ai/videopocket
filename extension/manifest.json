@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VideoPocket",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Save videos you are authorized to download from supported social posts.",
   "permissions": ["activeTab", "downloads", "storage", "scripting"],
   "host_permissions": [
