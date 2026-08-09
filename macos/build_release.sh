@@ -23,8 +23,8 @@ cp "$ROOT_DIR/helper/com.videopocket.helper.plist.template" "$APP_PATH/Contents/
 chmod +x "$APP_PATH/Contents/Resources/install_helper.sh"
 
 SDK_PATH="$(xcrun --sdk macosx --show-sdk-path)"
-xcrun swiftc -O -target arm64-apple-macos12.0 -sdk "$SDK_PATH" -framework AppKit -framework Foundation "$MAC_DIR/VideoPocketHelper.swift" -o "$BUILD_DIR/helper-arm64"
-xcrun swiftc -O -target x86_64-apple-macos12.0 -sdk "$SDK_PATH" -framework AppKit -framework Foundation "$MAC_DIR/VideoPocketHelper.swift" -o "$BUILD_DIR/helper-x86_64"
+xcrun swiftc -parse-as-library -O -target arm64-apple-macos12.0 -sdk "$SDK_PATH" -framework AppKit -framework Foundation "$MAC_DIR/VideoPocketHelper.swift" -o "$BUILD_DIR/helper-arm64"
+xcrun swiftc -parse-as-library -O -target x86_64-apple-macos12.0 -sdk "$SDK_PATH" -framework AppKit -framework Foundation "$MAC_DIR/VideoPocketHelper.swift" -o "$BUILD_DIR/helper-x86_64"
 lipo -create "$BUILD_DIR/helper-arm64" "$BUILD_DIR/helper-x86_64" -output "$APP_PATH/Contents/MacOS/VideoPocketHelper"
 
 ICONSET="$BUILD_DIR/AppIcon.iconset"
