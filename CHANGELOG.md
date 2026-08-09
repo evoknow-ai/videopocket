@@ -2,6 +2,26 @@
 
 All notable changes to VideoPocket are documented here.
 
+## 0.3.2 - 2026-08-09
+
+- Moved all platform folders under `VideoPocket/downloads/`.
+- Added automatic migration from the legacy `VideoPocket/` download destination.
+- Updated the Mac app's Open Downloads action to open the organized downloads folder.
+
+## 0.3.1 - 2026-08-09
+
+- Organized downloads into source folders: `x`, `fb`, `ig`, `linkedin`, and `youtube`.
+- Replaced long source titles with compact date, uploader, and media ID filenames.
+- Applied the same organization to direct Chrome downloads and helper downloads.
+
+## 0.3.0 - 2026-08-09
+
+- Added the native VideoPocket Helper Mac application.
+- Added universal Apple Silicon and Intel builds.
+- Added Developer ID signing, hardened runtime, notarization, stapling, and verification.
+- Added a distributable DMG with drag-to-Applications installation.
+- Added a graphical helper installer and health status.
+
 ## 0.2.1 - 2026-08-08
 
 - Added the Credits & About page.

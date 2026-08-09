@@ -2,6 +2,7 @@
 """Local-only VideoPocket download helper. Requires Python 3.10+ and yt-dlp."""
 from __future__ import annotations
 import json, os, re, secrets, subprocess, sys, threading
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -11,10 +12,18 @@ CONFIG_PATH = ROOT / "config.json"
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
 
 def config():
+    default_download_dir = Path.home()/"Downloads"/"VideoPocket"/"downloads"
     if not CONFIG_PATH.exists():
-        CONFIG_PATH.write_text(json.dumps({"token": secrets.token_urlsafe(24), "download_dir": str(Path.home()/"Downloads"/"VideoPocket")}, indent=2)+"\n")
+        CONFIG_PATH.write_text(json.dumps({"token": secrets.token_urlsafe(24), "download_dir": str(default_download_dir)}, indent=2)+"\n")
         os.chmod(CONFIG_PATH, 0o600)
-    return json.loads(CONFIG_PATH.read_text())
+    cfg = json.loads(CONFIG_PATH.read_text())
+    legacy_download_dir = Path.home()/"Downloads"/"VideoPocket"
+    configured_dir = Path(cfg.get("download_dir", default_download_dir)).expanduser()
+    if configured_dir == legacy_download_dir:
+        cfg["download_dir"] = str(default_download_dir)
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2)+"\n")
+        os.chmod(CONFIG_PATH, 0o600)
+    return cfg
 
 def allowed_url(value: str) -> bool:
     try:
@@ -23,10 +32,22 @@ def allowed_url(value: str) -> bool:
     except Exception:
         return False
 
-def download_and_normalize(url: str, output_dir: Path) -> None:
+def source_key(value: str) -> str:
+    host = (urlparse(value).hostname or "").lower()
+    if host == "x.com" or host.endswith(".x.com") or "twitter.com" in host: return "x"
+    if "facebook.com" in host: return "fb"
+    if "instagram.com" in host: return "ig"
+    if "linkedin.com" in host: return "linkedin"
+    if "youtube.com" in host or host == "youtu.be": return "youtube"
+    return "other"
+
+def download_and_normalize(url: str, output_root: Path) -> None:
     """Download, then create a universally playable MP4 with rotation applied."""
     log_path = ROOT / "helper.log"
-    template = output_dir / "%(uploader)s - %(title).150B [%(id)s].%(ext)s"
+    output_dir = output_root / source_key(url)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    downloaded_on = datetime.now().strftime("%Y-%m-%d")
+    template = output_dir / f"{downloaded_on}-%(uploader).50B-%(id)s.%(ext)s"
     download = [
         sys.executable, "-m", "yt_dlp", "--no-playlist", "--restrict-filenames",
         "--merge-output-format", "mp4", "--remux-video", "mp4",
