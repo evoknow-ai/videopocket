@@ -6,11 +6,11 @@ MAC_DIR="$ROOT_DIR/macos"
 BUILD_DIR="$ROOT_DIR/dist"
 APP_NAME="VideoPocket Helper"
 APP_PATH="$BUILD_DIR/$APP_NAME.app"
-DMG_PATH="$BUILD_DIR/VideoPocket-Mac-0.3.0.dmg"
+DMG_PATH="$BUILD_DIR/VideoPocket-Mac-0.3.1.dmg"
 IDENTITY="Developer ID Application: EVOKNOW, Inc (5R2X97DDYQ)"
 NOTARY_PROFILE="VideoPocketNotary"
 
-echo "Building VideoPocket Helper 0.3.0…"
+echo "Building VideoPocket Helper 0.3.1…"
 security find-identity -v -p codesigning | grep -F "$IDENTITY" >/dev/null || { echo "Developer ID certificate not found."; exit 1; }
 xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null || { echo "Notarization profile not available."; exit 1; }
 

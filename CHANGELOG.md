@@ -2,6 +2,12 @@
 
 All notable changes to VideoPocket are documented here.
 
+## 0.3.1 - 2026-08-09
+
+- Organized downloads into source folders: `x`, `fb`, `ig`, `linkedin`, and `youtube`.
+- Replaced long source titles with compact date, uploader, and media ID filenames.
+- Applied the same organization to direct Chrome downloads and helper downloads.
+
 ## 0.3.0 - 2026-08-09
 
 - Added the native VideoPocket Helper Mac application.
