@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 - 2026-08-10
+
+- Added a native **Install VideoPocket** app to the DMG.
+- Automatically quits and replaces an older Helper before installation.
+- Automatically launches the newly installed Helper.
+- Corrected hardened-runtime signing for the bundled Python and downloader components.
+- Added library-validation entitlements required by the bundled PyInstaller runtime.
+
 ## 0.4.0 - 2026-08-10
 
 - Removed token pairing as a requirement for current extension-to-Helper requests.

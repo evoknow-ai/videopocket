@@ -1,7 +1,7 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-VERSION="${1:-0.4.0}"
+VERSION="${1:-0.4.1}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-Developer ID Application: EVOKNOW, Inc (5R2X97DDYQ)}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-VideoPocketNotary}"
 
@@ -11,6 +11,8 @@ DIST_DIR="$ROOT_DIR/dist"
 VENV_DIR="$BUILD_DIR/venv"
 APP_NAME="VideoPocket Helper"
 APP_PATH="$BUILD_DIR/app/$APP_NAME.app"
+INSTALLER_NAME="Install VideoPocket"
+INSTALLER_PATH="$BUILD_DIR/installer/$INSTALLER_NAME.app"
 DMG_PATH="$DIST_DIR/VideoPocket-Mac-$VERSION.dmg"
 ZIP_PATH="$DIST_DIR/VideoPocket-Extension-$VERSION.zip"
 
@@ -79,21 +81,45 @@ cat > "$ENTITLEMENTS" <<'PLIST'
 <plist version="1.0"><dict>
   <key>com.apple.security.cs.allow-jit</key><true/>
   <key>com.apple.security.cs.allow-unsigned-executable-memory</key><true/>
+  <key>com.apple.security.cs.disable-library-validation</key><true/>
 </dict></plist>
 PLIST
 
 while IFS= read -r -d '' item; do
-  codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$item"
+  if file "$item" | grep -q 'Mach-O'; then
+    codesign --force --timestamp --options runtime --entitlements "$ENTITLEMENTS" \
+      --sign "$SIGN_IDENTITY" "$item"
+  fi
 done < <(find "$APP_PATH/Contents" -type f \( -perm -111 -o -name '*.dylib' -o -name '*.so' \) -print0)
 
-codesign --force --timestamp --options runtime --entitlements "$ENTITLEMENTS"   --sign "$SIGN_IDENTITY" "$APP_PATH"
+codesign --force --timestamp --options runtime --entitlements "$ENTITLEMENTS" \
+  --sign "$SIGN_IDENTITY" "$APP_PATH"
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+
+# Build a separate native installer. It owns the replacement flow so the
+# always-running Helper never has to replace itself in Finder.
+mkdir -p "$INSTALLER_PATH/Contents/MacOS" "$INSTALLER_PATH/Contents/Resources"
+INSTALLER_ARM64="$BUILD_DIR/installer-arm64"
+INSTALLER_X86_64="$BUILD_DIR/installer-x86_64"
+xcrun swiftc -parse-as-library -O -target arm64-apple-macos12 \
+  "$ROOT_DIR/macos/VideoPocketInstaller.swift" -o "$INSTALLER_ARM64"
+xcrun swiftc -parse-as-library -O -target x86_64-apple-macos12 \
+  "$ROOT_DIR/macos/VideoPocketInstaller.swift" -o "$INSTALLER_X86_64"
+lipo -create "$INSTALLER_ARM64" "$INSTALLER_X86_64" \
+  -output "$INSTALLER_PATH/Contents/MacOS/$INSTALLER_NAME"
+cp "$ROOT_DIR/macos/Installer-Info.plist" "$INSTALLER_PATH/Contents/Info.plist"
+plutil -replace CFBundleShortVersionString -string "$VERSION" "$INSTALLER_PATH/Contents/Info.plist"
+plutil -replace CFBundleVersion -string "$VERSION" "$INSTALLER_PATH/Contents/Info.plist"
+mkdir -p "$INSTALLER_PATH/Contents/Resources/Payload"
+cp -R "$APP_PATH" "$INSTALLER_PATH/Contents/Resources/Payload/"
+codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$INSTALLER_PATH"
+codesign --verify --deep --strict --verbose=2 "$INSTALLER_PATH"
 
 STAGE_DIR="$BUILD_DIR/dmg"
 mkdir -p "$STAGE_DIR"
-cp -R "$APP_PATH" "$STAGE_DIR/"
+cp -R "$INSTALLER_PATH" "$STAGE_DIR/"
 cp -R "$ROOT_DIR/extension" "$STAGE_DIR/VideoPocket Extension"
-ln -s /Applications "$STAGE_DIR/Applications"
+cp "$ROOT_DIR/macos/INSTALL.txt" "$STAGE_DIR/Read Me.txt"
 ditto -c -k --sequesterRsrc --keepParent "$ROOT_DIR/extension" "$ZIP_PATH"
 
 hdiutil create -volname "VideoPocket $VERSION" -srcfolder "$STAGE_DIR"   -ov -format UDZO "$DMG_PATH"

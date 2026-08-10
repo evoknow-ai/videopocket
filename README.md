@@ -18,17 +18,11 @@ A private Chrome extension that saves videos you own or have permission to downl
 
 The helper improves Facebook, Instagram, X and YouTube support by combining separate audio and video streams into an MP4.
 
-1. Open the `helper` folder.
-2. Control-click or right-click **Install VideoPocket.command**, choose **Open**, then confirm **Open**. This first-launch step is required because the current installer is not yet Apple-notarized.
-3. Wait for the **VideoPocket is ready** notification.
+1. Open the signed and notarized VideoPocket DMG.
+2. Double-click **Install VideoPocket**.
+3. Click **Install**. The installer safely closes any older Helper, replaces it in Applications, and starts the new version.
 
-That is all. The Chrome extension pairs automatically. The installer keeps the helper under `~/Library/Application Support/VideoPocket`, so deleting or replacing the downloaded ZIP will no longer break it. It also starts automatically at login.
-
-Homebrew must already be installed. The installer automatically adds FFmpeg when needed and keeps Python packages inside VideoPocket's private environment.
-
-### Why macOS shows a security warning
-
-The current community build is not signed with an Apple Developer ID or notarized by Apple. Opening it through Finder's **Open** context-menu action records your explicit approval. A warning-free public installer requires Apple Developer Program credentials and a signed, notarized release build.
+That is all. The Chrome extension pairs automatically. Python, yt-dlp, and FFmpeg are bundled, so users do not need Terminal, Homebrew, or a separate runtime.
 
 Downloads are saved under `~/Downloads/VideoPocket`. Change this in `helper/config.json` after its first launch.
 
