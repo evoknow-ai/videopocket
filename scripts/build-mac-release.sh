@@ -52,9 +52,14 @@ print(imageio_ffmpeg.get_ffmpeg_exe())
 PY
 )"
 
-"$VENV_DIR/bin/pyinstaller" --noconfirm --clean --windowed --onedir   --name "$APP_NAME"   "$ROOT_DIR/helper/videopocket_helper.py"
+"$VENV_DIR/bin/pyinstaller" --noconfirm --clean --windowed --onedir \
+  --distpath "$BUILD_DIR/pyinstaller-dist" --workpath "$BUILD_DIR/pyinstaller-work/helper" \
+  --specpath "$BUILD_DIR" --name "$APP_NAME" \
+  "$ROOT_DIR/helper/videopocket_helper.py"
 
-"$VENV_DIR/bin/pyinstaller" --noconfirm --clean --onefile   --name yt-dlp --collect-all yt_dlp "$YT_DLP_MAIN"
+"$VENV_DIR/bin/pyinstaller" --noconfirm --clean --onefile \
+  --distpath "$BUILD_DIR/pyinstaller-dist" --workpath "$BUILD_DIR/pyinstaller-work/yt-dlp" \
+  --specpath "$BUILD_DIR" --name yt-dlp --collect-all yt_dlp "$YT_DLP_MAIN"
 
 cp -R "$BUILD_DIR/pyinstaller-dist/$APP_NAME.app" "$APP_PATH"
 mkdir -p "$APP_PATH/Contents/Resources/bin"
