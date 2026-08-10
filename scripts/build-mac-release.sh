@@ -56,9 +56,9 @@ PY
 
 "$VENV_DIR/bin/pyinstaller" --noconfirm --clean --onefile   --name yt-dlp --collect-all yt_dlp "$YT_DLP_MAIN"
 
-cp -R "$ROOT_DIR/dist/$APP_NAME.app" "$APP_PATH"
+cp -R "$BUILD_DIR/pyinstaller-dist/$APP_NAME.app" "$APP_PATH"
 mkdir -p "$APP_PATH/Contents/Resources/bin"
-cp "$ROOT_DIR/dist/yt-dlp" "$APP_PATH/Contents/Resources/bin/yt-dlp"
+cp "$BUILD_DIR/pyinstaller-dist/yt-dlp" "$APP_PATH/Contents/Resources/bin/yt-dlp"
 cp "$FFMPEG_BIN" "$APP_PATH/Contents/Resources/bin/ffmpeg"
 chmod 755 "$APP_PATH/Contents/Resources/bin/"*
 
