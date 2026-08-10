@@ -1,26 +1,36 @@
 const HELPER = "http://127.0.0.1:17839";
+const HELPER_TIMEOUT_MS = 3000;
 
 function safeName(value = "video") {
   return value.replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || "video";
 }
 
-async function helperStatus() {
+async function helperFetch(path, options = {}) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 900);
+  const timer = setTimeout(() => controller.abort(), HELPER_TIMEOUT_MS);
   try {
-    const response = await fetch(`${HELPER}/health`, { signal: controller.signal });
-    if (!response.ok) return false;
-    await pairHelper();
-    return true;
-  } catch {
-    return false;
+    return await fetch(`${HELPER}${path}`, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function pairHelper() {
-  const response = await fetch(`${HELPER}/pair`, { method: "POST" });
+async function helperStatus() {
+  try {
+    const response = await helperFetch("/health");
+    if (!response.ok) return { online: false, reason: "unavailable" };
+    const details = await response.json().catch(() => ({}));
+    return { online: true, version: details.version || "legacy" };
+  } catch (error) {
+    return {
+      online: false,
+      reason: error.name === "AbortError" ? "timeout" : "unavailable"
+    };
+  }
+}
+
+async function pairLegacyHelper() {
+  const response = await helperFetch("/pair", { method: "POST" });
   if (!response.ok) throw new Error("Could not pair with the local helper.");
   const { token } = await response.json();
   if (!token) throw new Error("The local helper returned no pairing token.");
@@ -33,25 +43,43 @@ async function directDownload(url, title) {
   return chrome.downloads.download({ url, filename, conflictAction: "uniquify", saveAs: false });
 }
 
-async function helperDownload(pageUrl, title) {
-  let { helperToken = "" } = await chrome.storage.local.get("helperToken");
-  if (!helperToken) helperToken = await pairHelper();
-  const send = token => fetch(`${HELPER}/download`, {
+async function sendHelperDownload(pageUrl, title, token = "") {
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers["X-VideoPocket-Token"] = token;
+  return helperFetch("/download", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-VideoPocket-Token": token },
+    headers,
     body: JSON.stringify({ url: pageUrl, title })
   });
-  let response = await send(helperToken);
-  if (response.status === 401) response = await send(await pairHelper());
+}
+
+async function helperDownload(pageUrl, title) {
+  const { helperToken = "" } = await chrome.storage.local.get("helperToken");
+
+  // Modern helpers authorize the extension origin and need no shared secret.
+  let response = await sendHelperDownload(pageUrl, title);
+
+  // A legacy helper still expects its token. Reuse it first, then repair it
+  // automatically if the helper was reinstalled and generated a new token.
+  if (response.status === 401) {
+    let token = helperToken;
+    if (token) response = await sendHelperDownload(pageUrl, title, token);
+    if (!token || response.status === 401) {
+      token = await pairLegacyHelper();
+      response = await sendHelperDownload(pageUrl, title, token);
+    }
+  }
+
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "Local helper rejected the download.");
+  if (!response.ok) throw new Error(result.error || "The Mac Helper could not start this download.");
   return result;
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
     if (message.type === "STATUS") {
-      sendResponse({ ok: true, helper: await helperStatus() });
+      const status = await helperStatus();
+      sendResponse({ ok: true, helper: status.online, ...status });
       return;
     }
     if (message.type !== "DOWNLOAD") return;
@@ -61,11 +89,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const id = await directDownload(media.directUrl, media.title);
         sendResponse({ ok: true, method: "direct", id });
         return;
-      } catch (error) {
+      } catch {
         // Expiring URLs and referrer-restricted CDNs are retried through the helper.
       }
     }
-    if (!(await helperStatus())) throw new Error("The VideoPocket helper is not running.");
+    const status = await helperStatus();
+    if (!status.online) throw new Error("Open VideoPocket Helper, then click Try again.");
     const result = await helperDownload(media.pageUrl || sender.tab?.url, media.title);
     sendResponse({ ok: true, method: "helper", ...result });
   })().catch(error => sendResponse({ ok: false, error: error.message }));
