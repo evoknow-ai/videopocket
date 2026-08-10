@@ -6,8 +6,16 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-ROOT = Path(__file__).resolve().parent
-CONFIG_PATH = ROOT / "config.json"
+SOURCE_ROOT = Path(__file__).resolve().parent
+DATA_ROOT = Path.home() / "Library" / "Application Support" / "VideoPocket"
+DATA_ROOT.mkdir(parents=True, exist_ok=True)
+CONFIG_PATH = DATA_ROOT / "config.json"
+
+def bundled_tool(name: str) -> Path | None:
+    if getattr(sys, "frozen", False):
+        candidate = Path(sys.executable).resolve().parent.parent / "Resources" / "bin" / name
+        if candidate.exists(): return candidate
+    return None
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
 VERSION = "0.4.0"
 
@@ -29,9 +37,10 @@ def extension_origin(headers) -> bool:
     return headers.get("Origin", "").startswith("chrome-extension://")
 
 def download_and_normalize(url: str, output_dir: Path) -> None:
-    log_path = ROOT / "helper.log"
+    log_path = DATA_ROOT / "helper.log"
     template = output_dir / "%(uploader)s - %(title).150B [%(id)s].%(ext)s"
-    download = [sys.executable, "-m", "yt_dlp", "--no-playlist", "--restrict-filenames", "--merge-output-format", "mp4", "--remux-video", "mp4", "--quiet", "--no-warnings", "--print", "after_move:filepath", "-o", str(template), url]
+    yt_dlp_bin = bundled_tool("yt-dlp")
+    download = ([str(yt_dlp_bin)] if yt_dlp_bin else [sys.executable, "-m", "yt_dlp"]) + ["--no-playlist", "--restrict-filenames", "--merge-output-format", "mp4", "--remux-video", "mp4", "--quiet", "--no-warnings", "--print", "after_move:filepath", "-o", str(template), url]
     with log_path.open("a") as log:
         log.write(f"\nDownloading: {url}\n")
         result = subprocess.run(download, text=True, stdout=subprocess.PIPE, stderr=log)
@@ -41,7 +50,8 @@ def download_and_normalize(url: str, output_dir: Path) -> None:
         source = Path(lines[-1]).expanduser()
         if not source.exists(): log.write(f"Downloaded file was not found: {source}\n"); return
         temporary = source.with_name(f".{source.stem}.normalizing.mp4")
-        normalize = ["ffmpeg", "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-metadata:s:v:0", "rotate=0", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", str(temporary)]
+        ffmpeg_bin = bundled_tool("ffmpeg")
+        normalize = [str(ffmpeg_bin or "ffmpeg"), "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-metadata:s:v:0", "rotate=0", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", str(temporary)]
         converted = subprocess.run(normalize, stdout=log, stderr=subprocess.STDOUT)
         if converted.returncode == 0 and temporary.exists(): temporary.replace(source); log.write(f"Ready: {source}\n")
         else: temporary.unlink(missing_ok=True); log.write("Normalization failed; original download was preserved.\n")
