@@ -26,6 +26,8 @@ need xcrun
 need codesign
 need hdiutil
 need ditto
+need iconutil
+need sips
 security find-identity -v -p codesigning | grep -F "$SIGN_IDENTITY" >/dev/null ||
   fail "Developer ID certificate not found: $SIGN_IDENTITY"
 xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null ||
@@ -100,6 +102,14 @@ lipo -create "$INSTALLER_ARM64" "$INSTALLER_X86_64" \
 cp "$ROOT_DIR/macos/Installer-Info.plist" "$INSTALLER_PATH/Contents/Info.plist"
 plutil -replace CFBundleShortVersionString -string "$VERSION" "$INSTALLER_PATH/Contents/Info.plist"
 plutil -replace CFBundleVersion -string "$VERSION" "$INSTALLER_PATH/Contents/Info.plist"
+ICONSET="$BUILD_DIR/VideoPocket.iconset"
+mkdir -p "$ICONSET"
+for size in 16 32 128 256 512; do
+  sips -z "$size" "$size" "$ROOT_DIR/extension/icons/128.png" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
+  double=$((size * 2))
+  sips -z "$double" "$double" "$ROOT_DIR/extension/icons/128.png" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
+done
+iconutil -c icns "$ICONSET" -o "$INSTALLER_PATH/Contents/Resources/VideoPocket.icns"
 mkdir -p "$INSTALLER_PATH/Contents/Resources/Payload"
 cp -R "$APP_PATH" "$INSTALLER_PATH/Contents/Resources/Payload/"
 codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$INSTALLER_PATH"
