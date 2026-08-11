@@ -1,0 +1,9 @@
+VIDEOPOCKET FOR MAC
+
+Double-click “Install VideoPocket”.
+
+The installer safely closes any older Helper, replaces it in Applications,
+and launches the new version automatically.
+
+The Chrome extension is included for testing. Once the Chrome Web Store
+listing is live, the installer will direct users there instead.

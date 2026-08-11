@@ -34,7 +34,7 @@ Neither Apple credentials nor certificates are stored in this repository.
 From the repository root:
 
 ```bash
-bash scripts/build-mac-release.sh 0.4.0
+bash scripts/build-mac-release.sh 0.4.1
 ```
 
 The script performs preflight checks before modifying build output. It then creates an isolated Python environment, packages all runtime dependencies, signs nested executables and the app with hardened runtime, builds and signs the DMG, waits for Apple notarization, staples the ticket, and runs final Gatekeeper verification.
@@ -48,7 +48,7 @@ If the certificate or Keychain profile changes:
 ```bash
 SIGN_IDENTITY="Developer ID Application: Company Name (TEAMID)" \
 NOTARY_PROFILE="DifferentNotaryProfile" \
-bash scripts/build-mac-release.sh 0.4.0
+bash scripts/build-mac-release.sh 0.4.1
 ```
 
 ## Release checklist
