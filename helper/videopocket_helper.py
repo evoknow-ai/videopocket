@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Local-only VideoPocket download helper. Requires Python 3.10+ and yt-dlp."""
 from __future__ import annotations
-import json, os, secrets, subprocess, sys, threading
+import json, os, secrets, subprocess, sys, threading, time, uuid
 from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,7 +19,19 @@ def bundled_tool(name: str) -> Path | None:
         if candidate.exists(): return candidate
     return None
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
-VERSION = "0.4.3"
+VERSION = "0.4.4"
+JOBS: dict[str, dict] = {}
+JOBS_LOCK = threading.Lock()
+
+def set_job(job_id: str, **values) -> None:
+    with JOBS_LOCK:
+        JOBS.setdefault(job_id, {}).update(values, updated_at=time.time())
+
+def job_snapshot(job_id: str | None = None) -> dict:
+    with JOBS_LOCK:
+        if job_id and job_id in JOBS: return dict(JOBS[job_id])
+        if not JOBS: return {"state": "idle"}
+        return dict(max(JOBS.values(), key=lambda item: item.get("updated_at", 0)))
 
 def config():
     if not CONFIG_PATH.exists():
@@ -56,17 +68,30 @@ def source_name(url: str) -> str:
     if "linkedin.com" in host: return "linkedin"
     return "youtube"
 
-def download_and_normalize(url: str, output_root: Path) -> None:
+def download_and_normalize(job_id: str, url: str, output_root: Path) -> None:
     import yt_dlp
     output_dir = output_root / source_name(url)
     output_dir.mkdir(parents=True, exist_ok=True)
     template = output_dir / f"{date.today().isoformat()}-%(uploader).60B-%(id)s.%(ext)s"
     ffmpeg_bin = bundled_tool("ffmpeg")
+    def progress_hook(event):
+        state = event.get("status")
+        if state == "downloading":
+            total = event.get("total_bytes") or event.get("total_bytes_estimate") or 0
+            done = event.get("downloaded_bytes") or 0
+            percent = round(done * 100 / total, 1) if total else None
+            set_job(job_id, state="downloading", stage="Downloading", percent=percent,
+                    filename=Path(event.get("filename", "video")).name)
+        elif state == "finished":
+            set_job(job_id, state="processing", stage="Merging and preparing", percent=100,
+                    filename=Path(event.get("filename", "video")).name)
+
     options = {
         "noplaylist": True, "restrictfilenames": True, "quiet": True,
         "no_warnings": True, "outtmpl": str(template), "merge_output_format": "mp4",
         "format": "bestvideo[vcodec^=avc1]+bestaudio/best[vcodec^=h264]+bestaudio/best[vcodec^=avc1]/best[vcodec^=h264]/bestvideo+bestaudio/best",
         "postprocessors": [{"key": "FFmpegVideoRemuxer", "preferedformat": "mp4"}],
+        "progress_hooks": [progress_hook],
     }
     if ffmpeg_bin: options["ffmpeg_location"] = str(ffmpeg_bin.parent)
     with LOG_PATH.open("a") as log:
@@ -77,8 +102,12 @@ def download_and_normalize(url: str, output_root: Path) -> None:
                 source = Path(downloader.prepare_filename(info)).with_suffix(".mp4")
         except Exception as exc:
             log.write(f"Download failed: {exc}\n")
+            set_job(job_id, state="error", stage="Failed", error=str(exc))
             return
-        if not source.exists(): log.write(f"Downloaded file was not found: {source}\n"); return
+        if not source.exists():
+            message = f"Downloaded file was not found: {source}"
+            log.write(message+"\n"); set_job(job_id, state="error", stage="Failed", error=message); return
+        set_job(job_id, state="processing", stage="Converting for QuickTime", percent=100, filename=source.name)
         temporary = source.with_name(f".{source.stem}.normalizing.mp4")
         ffmpeg_bin = bundled_tool("ffmpeg")
         common = [str(ffmpeg_bin or "ffmpeg"), "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-pix_fmt", "yuv420p", "-tag:v", "avc1", "-metadata:s:v:0", "rotate=0", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart"]
@@ -97,10 +126,12 @@ def download_and_normalize(url: str, output_root: Path) -> None:
         if converted:
             temporary.replace(source)
             log.write(f"Ready (H.264/AAC): {source}\n")
+            set_job(job_id, state="ready", stage="Ready", percent=100, filename=source.name, path=str(source))
         else:
             temporary.unlink(missing_ok=True)
             source.rename(source.with_suffix(".incompatible.mp4"))
             log.write("Compatibility conversion failed; the original was marked incompatible.\n")
+            set_job(job_id, state="error", stage="Conversion failed", error="Could not create a QuickTime-compatible video")
 
 class Handler(BaseHTTPRequestHandler):
     server_version = f"VideoPocket/{VERSION}"
@@ -121,6 +152,10 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/errors":
             if not extension_origin(self.headers): return self.reply(403, {"error":"Available only to the VideoPocket extension"})
             return self.reply(200, {"ok": True, "log": recent_log()})
+        if self.path.startswith("/download-status"):
+            if not extension_origin(self.headers): return self.reply(403, {"error":"Available only to the VideoPocket extension"})
+            job_id = self.path.partition("?")[2].removeprefix("id=") or None
+            return self.reply(200, {"ok": True, "job": job_snapshot(job_id)})
         self.reply(404, {"error":"Not found"})
     def do_POST(self):
         cfg=config()
@@ -141,8 +176,10 @@ class Handler(BaseHTTPRequestHandler):
             url=body.get("url","")
             if not allowed_url(url): return self.reply(400, {"error":"Unsupported or unsafe URL"})
             out=Path(cfg["download_dir"]).expanduser(); out.mkdir(parents=True,exist_ok=True)
-            threading.Thread(target=download_and_normalize, args=(url, out), daemon=True).start()
-            self.reply(202, {"queued":True,"folder":str(out)})
+            job_id = uuid.uuid4().hex
+            set_job(job_id, id=job_id, state="queued", stage="Waiting to start", percent=0, filename=body.get("title") or "video")
+            threading.Thread(target=download_and_normalize, args=(job_id, url, out), daemon=True).start()
+            self.reply(202, {"queued":True,"jobId":job_id,"folder":str(out)})
         except Exception as exc: self.reply(500, {"error":str(exc)})
 
 if __name__ == "__main__":

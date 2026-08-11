@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.4 - 2026-08-11
+
+- Added live download, merge, and QuickTime-conversion progress in the extension popup.
+- Kept incomplete work behind a progress state until the final MP4 is ready.
+- Added an **Update available** notice with release and changelog links.
+- Added a toolbar badge when either the extension or Mac Helper is behind the current release.
+
 ## 0.4.3 - 2026-08-11
 
 - Replaced the blocking installer alert with a responsive native progress window.

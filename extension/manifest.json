@@ -1,16 +1,17 @@
 {
   "manifest_version": 3,
   "name": "VideoPocket",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Save videos you are authorized to download from supported social posts.",
-  "permissions": ["activeTab", "downloads", "storage", "scripting"],
+  "permissions": ["activeTab", "alarms", "downloads", "storage", "scripting"],
   "host_permissions": [
     "https://x.com/*", "https://twitter.com/*", "https://*.twimg.com/*",
     "https://www.facebook.com/*", "https://web.facebook.com/*", "https://*.fbcdn.net/*",
     "https://www.instagram.com/*", "https://*.cdninstagram.com/*",
     "https://www.linkedin.com/*", "https://*.licdn.com/*",
     "https://www.youtube.com/*", "https://youtu.be/*",
-    "http://127.0.0.1:17839/*"
+    "http://127.0.0.1:17839/*",
+    "https://raw.githubusercontent.com/evoknow-ai/videopocket/*"
   ],
   "background": { "service_worker": "background.js" },
   "action": {
