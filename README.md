@@ -1,32 +1,39 @@
 # VideoPocket
 
-A private Chrome extension that saves videos you own or have permission to download from X, Facebook, Instagram, LinkedIn, and YouTube. Direct MP4 files download in Chrome. Segmented streams are handed to an optional local Mac helper and never sent to a third-party service.
+A private Chrome extension that saves videos and images you own or have permission to download from X, Facebook, Instagram, LinkedIn, and YouTube. Direct media files download in Chrome. Segmented streams are handed to an optional local Mac helper and never sent to a third-party service.
 
 **Imagined by Mohammed Kabir. Developed by his agents.**
 
-[Kabir's website](https://eatsleepai.us) · [Changelog](CHANGELOG.md) · [GitHub](https://github.com/evoknow-ai/videopocket)
+[Download VideoPocket v0.4.5](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.5) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
+
+## Download
+
+Download the latest signed and notarized Mac installer and Chrome extension from the [VideoPocket v0.4.5 release](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.5):
+
+- **Mac:** `VideoPocket-Mac-0.4.5.dmg`
+- **Chrome extension:** `VideoPocket-Extension-0.4.5.zip`
 
 ## Install the Chrome extension
 
-1. Unzip `VideoPocket.zip`.
+1. Download and unzip `VideoPocket-Extension-0.4.5.zip`.
 2. Open `chrome://extensions` in Chrome.
 3. Enable **Developer mode**.
-4. Click **Load unpacked** and select the `VideoPocket/extension` folder.
-5. Open a supported site. A **Save video** button appears over each detected video.
+4. Click **Load unpacked** and select the unzipped `extension` folder.
+5. Open a supported site. A **Save video** or **Save image** button appears over detected media.
 
 ## Install the Mac helper
 
 The helper improves Facebook, Instagram, X and YouTube support by combining separate audio and video streams into an MP4.
 
-1. Open the signed and notarized VideoPocket DMG.
+1. Open `VideoPocket-Mac-0.4.5.dmg`.
 2. Double-click **Install VideoPocket**.
-3. Click **Install**. The installer safely closes any older Helper, replaces it in Applications, and starts the new version.
+3. Follow the visible installation progress until it confirms completion.
 
 That is all. The Chrome extension pairs automatically. Python, yt-dlp, and FFmpeg are bundled, so users do not need Terminal, Homebrew, or a separate runtime.
 
 Downloads are saved under `~/Downloads/VideoPocket`. Change this in `helper/config.json` after its first launch.
 
-Completed downloads are normalized to H.264 video and AAC audio. Rotation is applied to the pixels and cleared from the metadata for reliable playback in QuickTime, Finder, browsers, and mobile devices.
+Completed videos are normalized to H.264 video and AAC audio. Rotation is applied to the pixels and cleared from the metadata for reliable playback in QuickTime, Finder, browsers, and mobile devices.
 
 ## Privacy and security
 
@@ -46,10 +53,10 @@ Completed downloads are normalized to H.264 video and AAC audio. Rotation is app
 
 ## Troubleshooting
 
-- **Helper offline:** double-click `helper/Install VideoPocket.command` and reload the extension.
-- **Direct download fails:** install/start the helper so VideoPocket can use the post URL.
+- **Helper offline:** reinstall the latest Mac helper from the DMG and reload the extension.
+- **Direct download fails:** install or start the helper so VideoPocket can use the post URL.
 - **No button:** reload the page after installing the extension and start playback once.
-- Logs are written to `helper/helper.log` and `/tmp/videopocket-helper.err`.
+- Use **Errors** in the extension popup to view recent helper failures.
 
 ## Credits
 
