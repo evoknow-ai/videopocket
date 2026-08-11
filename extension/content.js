@@ -2,13 +2,14 @@
   const BUTTON = "videopocket-save";
   const site = location.hostname;
 
-  function postContainer(video) {
-    if (site.includes("x.com") || site.includes("twitter.com")) return video.closest("article");
-    if (site.includes("instagram.com")) return video.closest("article") || video.parentElement;
-    if (site.includes("linkedin.com")) return video.closest(".feed-shared-update-v2") || video.closest("article");
-    if (site.includes("facebook.com")) return video.closest("[role=article]") || video.closest("div[data-pagelet]");
-    if (site.includes("youtube.com")) return video.closest("#player") || video.parentElement;
-    return video.parentElement;
+  function postContainer(media) {
+    if (media.tagName === "IMG" && site.includes("instagram.com")) return media.parentElement;
+    if (site.includes("x.com") || site.includes("twitter.com")) return media.closest("article");
+    if (site.includes("instagram.com")) return media.closest("article") || media.parentElement;
+    if (site.includes("linkedin.com")) return media.closest(".feed-shared-update-v2") || media.closest("article");
+    if (site.includes("facebook.com")) return media.closest("[role=article]") || media.closest("div[data-pagelet]");
+    if (site.includes("youtube.com")) return media.closest("#player") || media.parentElement;
+    return media.parentElement;
   }
 
   function postUrl(container) {
@@ -25,8 +26,8 @@
     return [author, text].filter(Boolean).join(" - ").slice(0, 120) || document.title;
   }
 
-  function directUrl(video) {
-    const src = video.currentSrc || video.src || video.querySelector("source")?.src || "";
+  function directUrl(media) {
+    const src = media.currentSrc || media.src || media.querySelector?.("source")?.src || "";
     return /^https?:/.test(src) && !src.includes(".m3u8") ? src : "";
   }
 
@@ -38,28 +39,34 @@
     setTimeout(() => node.remove(), 3200);
   }
 
-  async function save(video, container, button) {
+  async function save(media, container, button) {
+    const kind = media.tagName === "IMG" ? "image" : "video";
     button.disabled = true;
     button.textContent = "Saving…";
     const response = await chrome.runtime.sendMessage({ type: "DOWNLOAD", media: {
-      directUrl: directUrl(video), pageUrl: postUrl(container), title: titleFor(container)
+      directUrl: directUrl(media), pageUrl: postUrl(media.closest("article") || container), title: titleFor(media.closest("article") || container), kind
     }}).catch(error => ({ ok: false, error: error.message }));
     toast(response.ok ? (response.method === "direct" ? "Download started" : "Download queued — check VideoPocket Errors") : response.error, !response.ok);
     button.disabled = false;
-    button.textContent = "Save video";
+    button.textContent = `Save ${kind}`;
   }
 
-  function attach(video) {
-    if (video.closest("[data-videopocket-ignore]")) return;
-    const container = postContainer(video);
+  function attach(media) {
+    if (media.closest("[data-videopocket-ignore]")) return;
+    if (media.tagName === "IMG") {
+      const rect = media.getBoundingClientRect();
+      if (!media.closest("article") || rect.width < 250 || rect.height < 250) return;
+    }
+    const container = postContainer(media);
     if (!container || container.querySelector(`.${BUTTON}`)) return;
     const button = document.createElement("button");
     button.className = BUTTON;
     button.type = "button";
-    button.textContent = "Save video";
-    button.title = "Save this video with VideoPocket";
+    const kind = media.tagName === "IMG" ? "image" : "video";
+    button.textContent = `Save ${kind}`;
+    button.title = `Save this ${kind} with VideoPocket`;
     button.addEventListener("click", event => {
-      event.preventDefault(); event.stopPropagation(); save(video, container, button);
+      event.preventDefault(); event.stopPropagation(); save(media, container, button);
     });
     const style = getComputedStyle(container);
     if (style.position === "static") container.style.position = "relative";
@@ -72,7 +79,7 @@
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      document.querySelectorAll("video").forEach(attach);
+      document.querySelectorAll(site.includes("instagram.com") ? "video, article img" : "video").forEach(attach);
     });
   }
   new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });

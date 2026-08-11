@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.5 - 2026-08-11
+
+- Added Instagram image downloads alongside existing Instagram Reel and video support.
+- Added **Save image** controls to eligible Instagram post and carousel images.
+- Preserved JPG, PNG, and WebP file types and organized direct downloads by source.
+- Added the VideoPocket project icon to the native macOS installer.
+
 ## 0.4.4 - 2026-08-11
 
 - Added live download, merge, and QuickTime-conversion progress in the extension popup.

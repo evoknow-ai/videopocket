@@ -3,7 +3,7 @@ const HELPER_TIMEOUT_MS = 3000;
 const UPDATE_MANIFEST = "https://raw.githubusercontent.com/evoknow-ai/videopocket/main/update.json";
 const CHANGELOG_URL = "https://github.com/evoknow-ai/videopocket/blob/main/CHANGELOG.md";
 
-function safeName(value = "video") {
+function safeName(value = "media") {
   return value.replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || "video";
 }
 
@@ -40,8 +40,24 @@ async function pairLegacyHelper() {
   return token;
 }
 
-async function directDownload(url, title) {
-  const filename = `VideoPocket/${safeName(title)}.mp4`;
+function mediaExtension(url, kind) {
+  if (kind === "video") return "mp4";
+  const match = new URL(url).pathname.match(/\.([a-zA-Z0-9]{2,5})$/);
+  return match && ["jpg", "jpeg", "png", "webp"].includes(match[1].toLowerCase()) ? match[1].toLowerCase() : "jpg";
+}
+
+function sourceFolder(pageUrl = "") {
+  let host = "";
+  try { host = new URL(pageUrl).hostname; } catch { return "other"; }
+  if (host.includes("instagram.com")) return "ig";
+  if (host.includes("facebook.com")) return "fb";
+  if (host === "x.com" || host.includes("twitter.com")) return "x";
+  if (host.includes("linkedin.com")) return "linkedin";
+  return "youtube";
+}
+
+async function directDownload(url, title, kind = "video", pageUrl = "") {
+  const filename = `VideoPocket/downloads/${sourceFolder(pageUrl)}/${safeName(title)}.${mediaExtension(url, kind)}`;
   return chrome.downloads.download({ url, filename, conflictAction: "uniquify", saveAs: false });
 }
 
@@ -148,7 +164,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const media = message.media || {};
     if (media.directUrl && /^https?:\/\//.test(media.directUrl)) {
       try {
-        const id = await directDownload(media.directUrl, media.title);
+        const id = await directDownload(media.directUrl, media.title, media.kind, media.pageUrl || sender.tab?.url);
         sendResponse({ ok: true, method: "direct", id });
         return;
       } catch {
