@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3 - 2026-08-11
+
+- Replaced the blocking installer alert with a responsive native progress window.
+- Added visible stages for preparation, old-Helper shutdown, application copying, and startup.
+- Added clear in-window completion and actionable error states.
+- Forced final videos to QuickTime-compatible H.264 video and AAC audio, with hardware and software encoder fallbacks.
+
 ## 0.4.2 - 2026-08-11
 
 - Added a **Downloads** button that opens VideoPocket's configured download folder in Finder.

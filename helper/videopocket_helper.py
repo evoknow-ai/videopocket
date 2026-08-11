@@ -19,7 +19,7 @@ def bundled_tool(name: str) -> Path | None:
         if candidate.exists(): return candidate
     return None
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
-VERSION = "0.4.2"
+VERSION = "0.4.3"
 
 def config():
     if not CONFIG_PATH.exists():
@@ -65,6 +65,7 @@ def download_and_normalize(url: str, output_root: Path) -> None:
     options = {
         "noplaylist": True, "restrictfilenames": True, "quiet": True,
         "no_warnings": True, "outtmpl": str(template), "merge_output_format": "mp4",
+        "format": "bestvideo[vcodec^=avc1]+bestaudio/best[vcodec^=h264]+bestaudio/best[vcodec^=avc1]/best[vcodec^=h264]/bestvideo+bestaudio/best",
         "postprocessors": [{"key": "FFmpegVideoRemuxer", "preferedformat": "mp4"}],
     }
     if ffmpeg_bin: options["ffmpeg_location"] = str(ffmpeg_bin.parent)
@@ -80,10 +81,26 @@ def download_and_normalize(url: str, output_root: Path) -> None:
         if not source.exists(): log.write(f"Downloaded file was not found: {source}\n"); return
         temporary = source.with_name(f".{source.stem}.normalizing.mp4")
         ffmpeg_bin = bundled_tool("ffmpeg")
-        normalize = [str(ffmpeg_bin or "ffmpeg"), "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-metadata:s:v:0", "rotate=0", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", str(temporary)]
-        converted = subprocess.run(normalize, stdout=log, stderr=subprocess.STDOUT)
-        if converted.returncode == 0 and temporary.exists(): temporary.replace(source); log.write(f"Ready: {source}\n")
-        else: temporary.unlink(missing_ok=True); log.write("Normalization failed; original download was preserved.\n")
+        common = [str(ffmpeg_bin or "ffmpeg"), "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-pix_fmt", "yuv420p", "-tag:v", "avc1", "-metadata:s:v:0", "rotate=0", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart"]
+        encoders = [
+            ["-c:v", "h264_videotoolbox", "-b:v", "6M"],
+            ["-c:v", "libx264", "-preset", "fast", "-crf", "20"],
+        ]
+        converted = False
+        for encoder in encoders:
+            temporary.unlink(missing_ok=True)
+            result = subprocess.run(common + encoder + [str(temporary)], stdout=log, stderr=subprocess.STDOUT)
+            if result.returncode == 0 and temporary.exists() and temporary.stat().st_size > 0:
+                converted = True
+                break
+            log.write(f"Compatibility conversion with {encoder[1]} failed; trying fallback.\n")
+        if converted:
+            temporary.replace(source)
+            log.write(f"Ready (H.264/AAC): {source}\n")
+        else:
+            temporary.unlink(missing_ok=True)
+            source.rename(source.with_suffix(".incompatible.mp4"))
+            log.write("Compatibility conversion failed; the original was marked incompatible.\n")
 
 class Handler(BaseHTTPRequestHandler):
     server_version = f"VideoPocket/{VERSION}"
