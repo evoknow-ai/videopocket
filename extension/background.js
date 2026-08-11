@@ -75,11 +75,26 @@ async function helperDownload(pageUrl, title) {
   return result;
 }
 
+async function helperAction(path, method = "GET") {
+  const response = await helperFetch(path, { method });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || "The Mac Helper could not complete this action.");
+  return result;
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
     if (message.type === "STATUS") {
       const status = await helperStatus();
       sendResponse({ ok: true, helper: status.online, ...status });
+      return;
+    }
+    if (message.type === "OPEN_DOWNLOADS") {
+      sendResponse(await helperAction("/open-downloads", "POST"));
+      return;
+    }
+    if (message.type === "GET_ERRORS") {
+      sendResponse(await helperAction("/errors"));
       return;
     }
     if (message.type !== "DOWNLOAD") return;

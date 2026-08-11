@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 - 2026-08-11
+
+- Added a **Downloads** button that opens VideoPocket's configured download folder in Finder.
+- Added an **Errors** panel that displays the latest helper log inside the extension popup.
+- Reworded queued-download messages so they no longer imply that a file was successfully saved.
+
 ## 0.4.1 - 2026-08-10
 
 - Added a native **Install VideoPocket** app to the DMG.

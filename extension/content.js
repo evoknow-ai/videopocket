@@ -44,7 +44,7 @@
     const response = await chrome.runtime.sendMessage({ type: "DOWNLOAD", media: {
       directUrl: directUrl(video), pageUrl: postUrl(container), title: titleFor(container)
     }}).catch(error => ({ ok: false, error: error.message }));
-    toast(response.ok ? (response.method === "direct" ? "Download started" : "Added to local downloader") : response.error, !response.ok);
+    toast(response.ok ? (response.method === "direct" ? "Download started" : "Download queued — check VideoPocket Errors") : response.error, !response.ok);
     button.disabled = false;
     button.textContent = "Save video";
   }

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-VERSION="${1:-0.4.1}"
+VERSION="${1:-0.4.2}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-Developer ID Application: EVOKNOW, Inc (5R2X97DDYQ)}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-VideoPocketNotary}"
 
@@ -43,11 +43,6 @@ python3 -m venv "$VENV_DIR"
 "$VENV_DIR/bin/python" -m pip install --upgrade pip
 "$VENV_DIR/bin/python" -m pip install "pyinstaller>=6,<7" "yt-dlp" "imageio-ffmpeg"
 
-YT_DLP_MAIN="$("$VENV_DIR/bin/python" - <<'PY'
-import pathlib, yt_dlp
-print(pathlib.Path(yt_dlp.__file__).with_name("__main__.py"))
-PY
-)"
 FFMPEG_BIN="$("$VENV_DIR/bin/python" - <<'PY'
 import imageio_ffmpeg
 print(imageio_ffmpeg.get_ffmpeg_exe())
@@ -56,16 +51,11 @@ PY
 
 "$VENV_DIR/bin/pyinstaller" --noconfirm --clean --windowed --onedir \
   --distpath "$BUILD_DIR/pyinstaller-dist" --workpath "$BUILD_DIR/pyinstaller-work/helper" \
-  --specpath "$BUILD_DIR" --name "$APP_NAME" \
+  --specpath "$BUILD_DIR" --name "$APP_NAME" --collect-all yt_dlp \
   "$ROOT_DIR/helper/videopocket_helper.py"
-
-"$VENV_DIR/bin/pyinstaller" --noconfirm --clean --onefile \
-  --distpath "$BUILD_DIR/pyinstaller-dist" --workpath "$BUILD_DIR/pyinstaller-work/yt-dlp" \
-  --specpath "$BUILD_DIR" --name yt-dlp --collect-all yt_dlp "$YT_DLP_MAIN"
 
 cp -R "$BUILD_DIR/pyinstaller-dist/$APP_NAME.app" "$APP_PATH"
 mkdir -p "$APP_PATH/Contents/Resources/bin"
-cp "$BUILD_DIR/pyinstaller-dist/yt-dlp" "$APP_PATH/Contents/Resources/bin/yt-dlp"
 cp "$FFMPEG_BIN" "$APP_PATH/Contents/Resources/bin/ffmpeg"
 chmod 755 "$APP_PATH/Contents/Resources/bin/"*
 

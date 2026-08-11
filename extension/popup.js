@@ -1,5 +1,7 @@
 const status = document.querySelector("#status");
 const retry = document.querySelector("#retry");
+const errorPanel = document.querySelector("#error-panel");
+const errorLog = document.querySelector("#error-log");
 
 async function refreshStatus() {
   status.textContent = "Connecting to Mac Helper…";
@@ -12,6 +14,20 @@ async function refreshStatus() {
 
 retry.addEventListener("click", refreshStatus);
 refreshStatus();
+
+document.querySelector("#downloads").addEventListener("click", async () => {
+  const result = await chrome.runtime.sendMessage({ type: "OPEN_DOWNLOADS" }).catch(error => ({ ok: false, error: error.message }));
+  if (!result.ok) status.textContent = result.error || "Could not open Downloads";
+});
+
+document.querySelector("#errors").addEventListener("click", async () => {
+  errorPanel.hidden = false;
+  errorLog.textContent = "Loading…";
+  const result = await chrome.runtime.sendMessage({ type: "GET_ERRORS" }).catch(error => ({ ok: false, error: error.message }));
+  errorLog.textContent = result.ok ? result.log : (result.error || "Could not read the helper log");
+});
+
+document.querySelector("#close-errors").addEventListener("click", () => { errorPanel.hidden = true; });
 
 document.querySelector("#save").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -32,6 +48,6 @@ document.querySelector("#save").addEventListener("click", async () => {
   const response = await chrome.runtime.sendMessage({ type: "DOWNLOAD", media: {
     directUrl: "", pageUrl: tab.url, title: tab.title || "video"
   }}).catch(error => ({ ok: false, error: error.message }));
-  status.textContent = response.ok ? "Added to downloads" : response.error;
+  status.textContent = response.ok ? "Download queued — check Errors for progress" : response.error;
   retry.hidden = response.ok;
 });
