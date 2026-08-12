@@ -13,6 +13,18 @@ Download the latest signed and notarized Mac installer and Chrome extension from
 - **Mac:** `VideoPocket-Mac-0.4.5.dmg`
 - **Chrome extension:** `VideoPocket-Extension-0.4.5.zip`
 
+## Screenshots
+
+### Extension
+
+![VideoPocket Chrome extension popup](docs/images/videopocket-extension-popup.png)
+
+### Organized downloads
+
+VideoPocket keeps media organized by source in dedicated X, Facebook, and Instagram folders.
+
+![VideoPocket download folders for X, Facebook, and Instagram](docs/images/videopocket-organized-downloads.png)
+
 ## Install the Chrome extension
 
 1. Download and unzip `VideoPocket-Extension-0.4.5.zip`.
