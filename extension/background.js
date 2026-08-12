@@ -52,8 +52,7 @@ function sourceFolder(pageUrl = "") {
   if (host.includes("instagram.com")) return "ig";
   if (host.includes("facebook.com")) return "fb";
   if (host === "x.com" || host.includes("twitter.com")) return "x";
-  if (host.includes("linkedin.com")) return "linkedin";
-  return "youtube";
+  return "other";
 }
 
 async function directDownload(url, title, kind = "video", pageUrl = "") {

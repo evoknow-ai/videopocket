@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280" viewBox="0 0 440 280">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16090d"/><stop offset="1" stop-color="#321018"/></linearGradient></defs>
+  <rect width="440" height="280" rx="0" fill="url(#bg)"/>
+  <circle cx="374" cy="42" r="118" fill="#e53935" opacity=".12"/>
+  <image href="../../../extension/icons/128.png" x="32" y="50" width="104" height="104"/>
+  <text x="32" y="194" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="700">VideoPocket</text>
+  <text x="33" y="225" fill="#efb6b5" font-family="Arial,Helvetica,sans-serif" font-size="17">Save authorized media locally</text>
+  <g font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700" text-anchor="middle">
+    <rect x="282" y="91" width="52" height="32" rx="16" fill="#fff"/><text x="308" y="113" fill="#1b0a0e">X</text>
+    <rect x="342" y="91" width="66" height="32" rx="16" fill="#fff"/><text x="375" y="113" fill="#1b0a0e">FB</text>
+    <rect x="312" y="132" width="66" height="32" rx="16" fill="#fff"/><text x="345" y="154" fill="#1b0a0e">IG</text>
+  </g>
+</svg>

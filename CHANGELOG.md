@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.6 - 2026-08-12
+
+- Prepared the extension for Chrome Web Store review.
+- Reduced site access to X/Twitter, Facebook, and Instagram.
+- Removed LinkedIn and YouTube permissions and code paths from the store submission.
+- Added a public privacy policy, permission audit, reviewer instructions, finalized listing copy, and store artwork.
+
 ## 0.4.5 - 2026-08-11
 
 - Added Instagram image downloads alongside existing Instagram Reel and video support.

@@ -72,7 +72,7 @@ document.querySelector("#save").addEventListener("click", async () => {
     status.textContent = "Save requested";
     return;
   }
-  const supported = /(^|\.)(facebook\.com|instagram\.com|x\.com|twitter\.com|linkedin\.com|youtube\.com|youtu\.be)$/.test(new URL(tab.url).hostname);
+  const supported = /(^|\.)(facebook\.com|instagram\.com|x\.com|twitter\.com)$/.test(new URL(tab.url).hostname);
   if (!supported) {
     status.textContent = "This website is not supported";
     return;

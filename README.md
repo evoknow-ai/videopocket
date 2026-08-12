@@ -4,7 +4,7 @@ A private Chrome extension that saves videos and images you own or have permissi
 
 **Imagined by Mohammed Kabir. Developed by his agents.**
 
-[Download VideoPocket v0.4.5](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.5) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
+[Download VideoPocket v0.4.5](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.5) · [Privacy](PRIVACY.md) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
 
 ## Download
 
@@ -12,6 +12,18 @@ Download the latest signed and notarized Mac installer and Chrome extension from
 
 - **Mac:** `VideoPocket-Mac-0.4.5.dmg`
 - **Chrome extension:** `VideoPocket-Extension-0.4.5.zip`
+
+## Screenshots
+
+### Extension
+
+![VideoPocket Chrome extension popup](docs/images/videopocket-extension-popup.png)
+
+### Organized downloads
+
+VideoPocket keeps media organized by source in dedicated X, Facebook, and Instagram folders.
+
+![VideoPocket download folders for X, Facebook, and Instagram](docs/images/videopocket-organized-downloads.png)
 
 ## Install the Chrome extension
 

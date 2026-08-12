@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#18090e"/><stop offset="1" stop-color="#3f101a"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="24" flood-opacity=".5"/></filter></defs>
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <text x="70" y="111" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="54" font-weight="700">Everything in its pocket.</text>
+  <text x="72" y="157" fill="#eab8b7" font-family="Arial,Helvetica,sans-serif" font-size="23">Downloads organized automatically by platform</text>
+  <rect x="66" y="203" width="1148" height="520" rx="28" fill="#070407" opacity=".62" filter="url(#shadow)"/>
+  <image href="../../images/videopocket-organized-downloads.png" x="101" y="229" width="645" height="468" preserveAspectRatio="xMidYMid meet"/>
+  <g font-family="Arial,Helvetica,sans-serif">
+    <text x="795" y="300" fill="#fff" font-size="31" font-weight="700">Ready when you are</text>
+    <text x="795" y="350" fill="#d8b8bd" font-size="20">X/Twitter videos</text>
+    <text x="795" y="392" fill="#d8b8bd" font-size="20">Facebook videos and Reels</text>
+    <text x="795" y="434" fill="#d8b8bd" font-size="20">Instagram videos and images</text>
+    <text x="795" y="505" fill="#ef8d8a" font-size="20" font-weight="700">Private local processing</text>
+    <text x="795" y="541" fill="#d8b8bd" font-size="18">No VideoPocket cloud server.</text>
+    <text x="795" y="573" fill="#d8b8bd" font-size="18">No analytics. No account.</text>
+  </g>
+</svg>

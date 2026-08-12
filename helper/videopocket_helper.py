@@ -18,8 +18,8 @@ def bundled_tool(name: str) -> Path | None:
         candidate = Path(sys.executable).resolve().parent.parent / "Resources" / "bin" / name
         if candidate.exists(): return candidate
     return None
-ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
-VERSION = "0.4.5"
+ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com")
+VERSION = "0.4.6"
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
@@ -65,8 +65,7 @@ def source_name(url: str) -> str:
     if host in ("x.com", "twitter.com") or host.endswith((".x.com", ".twitter.com")): return "x"
     if "facebook.com" in host: return "fb"
     if "instagram.com" in host: return "ig"
-    if "linkedin.com" in host: return "linkedin"
-    return "youtube"
+    return "other"
 
 def download_and_normalize(job_id: str, url: str, output_root: Path) -> None:
     import yt_dlp

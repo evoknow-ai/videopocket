@@ -1,15 +1,13 @@
 {
   "manifest_version": 3,
   "name": "VideoPocket",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Save videos and Instagram images you are authorized to download from supported social posts.",
   "permissions": ["activeTab", "alarms", "downloads", "storage", "scripting"],
   "host_permissions": [
-    "https://x.com/*", "https://twitter.com/*", "https://*.twimg.com/*",
-    "https://www.facebook.com/*", "https://web.facebook.com/*", "https://*.fbcdn.net/*",
-    "https://www.instagram.com/*", "https://*.cdninstagram.com/*",
-    "https://www.linkedin.com/*", "https://*.licdn.com/*",
-    "https://www.youtube.com/*", "https://youtu.be/*",
+    "https://x.com/*", "https://twitter.com/*",
+    "https://www.facebook.com/*", "https://web.facebook.com/*",
+    "https://www.instagram.com/*",
     "http://127.0.0.1:17839/*",
     "https://raw.githubusercontent.com/evoknow-ai/videopocket/*"
   ],
@@ -23,7 +21,7 @@
   "content_scripts": [{
     "matches": [
       "https://x.com/*", "https://twitter.com/*", "https://www.facebook.com/*", "https://web.facebook.com/*",
-      "https://www.instagram.com/*", "https://www.linkedin.com/*", "https://www.youtube.com/*"
+      "https://www.instagram.com/*"
     ],
     "js": ["content.js"],
     "css": ["content.css"],

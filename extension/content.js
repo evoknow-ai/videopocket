@@ -6,17 +6,14 @@
     if (media.tagName === "IMG" && site.includes("instagram.com")) return media.parentElement;
     if (site.includes("x.com") || site.includes("twitter.com")) return media.closest("article");
     if (site.includes("instagram.com")) return media.closest("article") || media.parentElement;
-    if (site.includes("linkedin.com")) return media.closest(".feed-shared-update-v2") || media.closest("article");
     if (site.includes("facebook.com")) return media.closest("[role=article]") || media.closest("div[data-pagelet]");
-    if (site.includes("youtube.com")) return media.closest("#player") || media.parentElement;
     return media.parentElement;
   }
 
   function postUrl(container) {
     const selectors = site.includes("instagram.com") ? 'a[href*="/p/"],a[href*="/reel/"]' :
-      site.includes("linkedin.com") ? 'a[href*="/feed/update/"]' :
       site.includes("facebook.com") ? 'a[href*="/videos/"],a[href*="/reel/"]' :
-      site.includes("youtube.com") ? 'a[href*="watch?v="]' : 'a[href*="/status/"]';
+      'a[href*="/status/"]';
     return container?.querySelector(selectors)?.href || location.href;
   }
 
