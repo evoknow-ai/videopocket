@@ -1,17 +1,19 @@
 # VideoPocket
 
-A private Chrome extension that saves videos and images you own or have permission to download from X, Facebook, Instagram, LinkedIn, and YouTube. Direct media files download in Chrome. Segmented streams are handed to an optional local Mac helper and never sent to a third-party service.
+A Chrome extension that saves videos and images you own or have permission to download from X, Facebook, Instagram, LinkedIn, and YouTube. Direct media files download in Chrome. Segmented streams are handed to an optional local Mac helper and never sent to a third-party service.
 
 **Imagined by Mohammed Kabir. Developed by his agents.**
 
-[Download VideoPocket v0.4.6](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.6) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
+[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/videopocket/oecdcmmimmilmdodofnaipenpfgghmgn) · [Download VideoPocket v0.4.6](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.6) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
 
 ## Download
 
-Download the latest signed and notarized Mac installer and Chrome extension from the [VideoPocket v0.4.6 release](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.6):
+Install the official extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/videopocket/oecdcmmimmilmdodofnaipenpfgghmgn).
+
+Download the latest signed and notarized Mac helper from the [VideoPocket v0.4.6 release](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.6):
 
 - **Mac:** `VideoPocket-Mac-0.4.6.dmg`
-- **Chrome extension:** `VideoPocket-Extension-0.4.6.zip`
+- **Chrome extension source package:** `VideoPocket-Extension-0.4.6.zip`
 
 ## Screenshots
 
@@ -26,6 +28,10 @@ VideoPocket keeps media organized by source in dedicated X, Facebook, and Instag
 ![VideoPocket download folders for X, Facebook, and Instagram](docs/images/videopocket-organized-downloads.png)
 
 ## Install the Chrome extension
+
+Install VideoPocket directly from its [official Chrome Web Store listing](https://chromewebstore.google.com/detail/videopocket/oecdcmmimmilmdodofnaipenpfgghmgn).
+
+For development or source testing:
 
 1. Download and unzip `VideoPocket-Extension-0.4.6.zip`.
 2. Open `chrome://extensions` in Chrome.
@@ -60,7 +66,6 @@ Completed videos are normalized to H.264 video and AAC audio. Rotation is applie
 - Sites frequently change their markup and delivery systems, so adapters will occasionally need updating.
 - Private or age-restricted media may not download because browser cookies are intentionally not copied.
 - DRM-protected video is not supported.
-- Chrome Web Store distribution may be restricted; this project is intended for private, unpacked installation.
 - You are responsible for complying with copyright law and each platform's terms.
 
 ## Troubleshooting
