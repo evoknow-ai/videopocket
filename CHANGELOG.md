@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.6 - 2026-08-16
+
+- Fixed the **Errors** panel and download-progress polling when Chrome omits the extension origin on local GET requests.
+- Added automatic token recovery for authenticated Helper actions.
+- Included the exact FFmpeg failure in both the popup status and recent Helper log.
+- Kept an already compatible H.264/AAC original when an unnecessary normalization pass fails.
+
 ## 0.4.5 - 2026-08-11
 
 - Added Instagram image downloads alongside existing Instagram Reel and video support.

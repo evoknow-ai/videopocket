@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Local-only VideoPocket download helper. Requires Python 3.10+ and yt-dlp."""
 from __future__ import annotations
-import json, os, secrets, subprocess, sys, threading, time, uuid
+import json, os, re, secrets, subprocess, sys, threading, time, uuid
 from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 
 SOURCE_ROOT = Path(__file__).resolve().parent
 DATA_ROOT = Path.home() / "Library" / "Application Support" / "VideoPocket"
-DATA_ROOT.mkdir(parents=True, exist_ok=True)
 CONFIG_PATH = DATA_ROOT / "config.json"
 LOG_PATH = DATA_ROOT / "helper.log"
 
@@ -19,7 +18,7 @@ def bundled_tool(name: str) -> Path | None:
         if candidate.exists(): return candidate
     return None
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
-VERSION = "0.4.5"
+VERSION = "0.4.6"
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
@@ -34,6 +33,7 @@ def job_snapshot(job_id: str | None = None) -> dict:
         return dict(max(JOBS.values(), key=lambda item: item.get("updated_at", 0)))
 
 def config():
+    DATA_ROOT.mkdir(parents=True, exist_ok=True)
     if not CONFIG_PATH.exists():
         CONFIG_PATH.write_text(json.dumps({"token": secrets.token_urlsafe(24), "download_dir": str(Path.home()/"Downloads"/"VideoPocket"/"downloads")}, indent=2)+"\n")
         os.chmod(CONFIG_PATH, 0o600)
@@ -60,6 +60,18 @@ def allowed_url(value: str) -> bool:
 def extension_origin(headers) -> bool:
     return headers.get("Origin", "").startswith("chrome-extension://")
 
+def request_authorized(headers, cfg: dict) -> bool:
+    """Accept Chrome's extension origin or the helper's private pairing token.
+
+    Chrome can omit Origin on extension GET requests, so protected read-only
+    endpoints must not rely on that header alone.
+    """
+    if extension_origin(headers):
+        return True
+    supplied = headers.get("X-VideoPocket-Token", "")
+    expected = cfg.get("token", "")
+    return bool(supplied and expected and secrets.compare_digest(supplied, expected))
+
 def source_name(url: str) -> str:
     host = (urlparse(url).hostname or "").lower()
     if host in ("x.com", "twitter.com") or host.endswith((".x.com", ".twitter.com")): return "x"
@@ -67,6 +79,26 @@ def source_name(url: str) -> str:
     if "instagram.com" in host: return "ig"
     if "linkedin.com" in host: return "linkedin"
     return "youtube"
+
+def already_quicktime_compatible(source: Path, ffmpeg: Path | None, log) -> bool:
+    """Use FFmpeg's stream report when a normalization attempt cannot finish."""
+    try:
+        probe = subprocess.run(
+            [str(ffmpeg or "ffmpeg"), "-hide_banner", "-i", str(source)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            errors="replace",
+        )
+    except Exception as exc:
+        log.write(f"Could not inspect the original video: {exc}\n")
+        return False
+    report = probe.stderr.lower()
+    video_ok = re.search(r"video:\s*(h264|avc)", report) is not None
+    audio_streams = re.findall(r"audio:\s*([a-z0-9_]+)", report)
+    audio_ok = not audio_streams or all(codec == "aac" for codec in audio_streams)
+    rotated = re.search(r"rotation of\s+(?!-?0(?:\.0+)?\s+degrees)", report) is not None
+    return video_ok and audio_ok and not rotated
 
 def download_and_normalize(job_id: str, url: str, output_root: Path) -> None:
     import yt_dlp
@@ -116,22 +148,45 @@ def download_and_normalize(job_id: str, url: str, output_root: Path) -> None:
             ["-c:v", "libx264", "-preset", "fast", "-crf", "20"],
         ]
         converted = False
+        conversion_error = ""
         for encoder in encoders:
             temporary.unlink(missing_ok=True)
-            result = subprocess.run(common + encoder + [str(temporary)], stdout=log, stderr=subprocess.STDOUT)
-            if result.returncode == 0 and temporary.exists() and temporary.stat().st_size > 0:
-                converted = True
-                break
+            try:
+                result = subprocess.run(
+                    common + encoder + [str(temporary)],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    errors="replace",
+                )
+                output = result.stdout or ""
+                if output:
+                    log.write(output)
+                if result.returncode == 0 and temporary.exists() and temporary.stat().st_size > 0:
+                    converted = True
+                    break
+                tail = "\n".join(output.strip().splitlines()[-12:])
+                conversion_error = tail or f"FFmpeg exited with status {result.returncode}."
+            except Exception as exc:
+                conversion_error = str(exc)
             log.write(f"Compatibility conversion with {encoder[1]} failed; trying fallback.\n")
+            log.flush()
         if converted:
             temporary.replace(source)
             log.write(f"Ready (H.264/AAC): {source}\n")
             set_job(job_id, state="ready", stage="Ready", percent=100, filename=source.name, path=str(source))
+        elif already_quicktime_compatible(source, ffmpeg_bin, log):
+            temporary.unlink(missing_ok=True)
+            log.write(f"Ready: the original is already H.264/AAC compatible: {source}\n")
+            set_job(job_id, state="ready", stage="Ready", percent=100, filename=source.name, path=str(source))
         else:
             temporary.unlink(missing_ok=True)
             source.rename(source.with_suffix(".incompatible.mp4"))
-            log.write("Compatibility conversion failed; the original was marked incompatible.\n")
-            set_job(job_id, state="error", stage="Conversion failed", error="Could not create a QuickTime-compatible video")
+            message = "Could not create a QuickTime-compatible video"
+            if conversion_error:
+                message += f": {conversion_error}"
+            log.write(f"{message}\nThe original was marked incompatible.\n")
+            set_job(job_id, state="error", stage="Conversion failed", error=message)
 
 class Handler(BaseHTTPRequestHandler):
     server_version = f"VideoPocket/{VERSION}"
@@ -150,10 +205,10 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/health":
             return self.reply(200, {"ok": True, "version": VERSION})
         if self.path == "/errors":
-            if not extension_origin(self.headers): return self.reply(403, {"error":"Available only to the VideoPocket extension"})
+            if not request_authorized(self.headers, config()): return self.reply(403, {"error":"VideoPocket could not authenticate with the Mac Helper"})
             return self.reply(200, {"ok": True, "log": recent_log()})
         if self.path.startswith("/download-status"):
-            if not extension_origin(self.headers): return self.reply(403, {"error":"Available only to the VideoPocket extension"})
+            if not request_authorized(self.headers, config()): return self.reply(403, {"error":"VideoPocket could not authenticate with the Mac Helper"})
             job_id = self.path.partition("?")[2].removeprefix("id=") or None
             return self.reply(200, {"ok": True, "job": job_snapshot(job_id)})
         self.reply(404, {"error":"Not found"})
@@ -162,8 +217,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/pair":
             if not extension_origin(self.headers): return self.reply(403, {"error":"Pairing is available only to the VideoPocket extension"})
             return self.reply(200, {"token": cfg["token"]})
-        token_ok = secrets.compare_digest(self.headers.get("X-VideoPocket-Token", ""), cfg["token"])
-        if not extension_origin(self.headers) and not token_ok: return self.reply(401, {"error":"Request did not come from VideoPocket"})
+        if not request_authorized(self.headers, cfg): return self.reply(401, {"error":"Request did not come from VideoPocket"})
         if self.path == "/open-downloads":
             try:
                 folder=Path(cfg["download_dir"]).expanduser(); folder.mkdir(parents=True,exist_ok=True)

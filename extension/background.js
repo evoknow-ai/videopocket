@@ -94,7 +94,16 @@ async function helperDownload(pageUrl, title) {
 }
 
 async function helperAction(path, method = "GET") {
-  const response = await helperFetch(path, { method });
+  const { helperToken = "" } = await chrome.storage.local.get("helperToken");
+  const send = token => helperFetch(path, {
+    method,
+    headers: token ? { "X-VideoPocket-Token": token } : {}
+  });
+  let response = await send(helperToken);
+  if (response.status === 401 || response.status === 403) {
+    const token = await pairLegacyHelper();
+    response = await send(token);
+  }
   const result = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(result.error || "The Mac Helper could not complete this action.");
   return result;
