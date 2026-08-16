@@ -4,14 +4,14 @@ A private Chrome extension that saves videos and images you own or have permissi
 
 **Imagined by Mohammed Kabir. Developed by his agents.**
 
-[Download VideoPocket v0.4.5](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.5) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
+[Download VideoPocket v0.4.6](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.6) · [Changelog](CHANGELOG.md) · [Kabir's website](https://eatsleepai.us)
 
 ## Download
 
-Download the latest signed and notarized Mac installer and Chrome extension from the [VideoPocket v0.4.5 release](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.5):
+Download the latest signed and notarized Mac installer and Chrome extension from the [VideoPocket v0.4.6 release](https://github.com/evoknow-ai/videopocket/releases/tag/v0.4.6):
 
-- **Mac:** `VideoPocket-Mac-0.4.5.dmg`
-- **Chrome extension:** `VideoPocket-Extension-0.4.5.zip`
+- **Mac:** `VideoPocket-Mac-0.4.6.dmg`
+- **Chrome extension:** `VideoPocket-Extension-0.4.6.zip`
 
 ## Screenshots
 
@@ -27,7 +27,7 @@ VideoPocket keeps media organized by source in dedicated X, Facebook, and Instag
 
 ## Install the Chrome extension
 
-1. Download and unzip `VideoPocket-Extension-0.4.5.zip`.
+1. Download and unzip `VideoPocket-Extension-0.4.6.zip`.
 2. Open `chrome://extensions` in Chrome.
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the unzipped `extension` folder.
@@ -37,7 +37,7 @@ VideoPocket keeps media organized by source in dedicated X, Facebook, and Instag
 
 The helper improves Facebook, Instagram, X and YouTube support by combining separate audio and video streams into an MP4.
 
-1. Open `VideoPocket-Mac-0.4.5.dmg`.
+1. Open `VideoPocket-Mac-0.4.6.dmg`.
 2. Double-click **Install VideoPocket**.
 3. Follow the visible installation progress until it confirms completion.
 
