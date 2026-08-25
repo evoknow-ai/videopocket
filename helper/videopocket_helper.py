@@ -18,7 +18,7 @@ def bundled_tool(name: str) -> Path | None:
         if candidate.exists(): return candidate
     return None
 ALLOWED = ("x.com", "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "youtube.com", "youtu.be")
-VERSION = "0.4.6"
+VERSION = "0.4.7"
 JOBS: dict[str, dict] = {}
 JOBS_LOCK = threading.Lock()
 
