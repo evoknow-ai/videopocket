@@ -1,7 +1,7 @@
 #!/bin/bash
 set -Eeuo pipefail
 
-VERSION="${1:-0.4.6}"
+VERSION="${1:-0.4.7}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-Developer ID Application: EVOKNOW, Inc (5R2X97DDYQ)}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-VideoPocketNotary}"
 
