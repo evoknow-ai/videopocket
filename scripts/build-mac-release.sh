@@ -36,6 +36,9 @@ xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null ||
 SOURCE_VERSION="$(sed -n 's/^VERSION = "\([^"]*\)"/\1/p' "$ROOT_DIR/helper/videopocket_helper.py")"
 [[ "$SOURCE_VERSION" == "$VERSION" ]] ||
   fail "Requested $VERSION, but helper source reports $SOURCE_VERSION."
+EXTENSION_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$ROOT_DIR/extension/manifest.json")"
+[[ "$EXTENSION_VERSION" == "$VERSION" ]] ||
+  fail "Requested $VERSION, but extension manifest reports $EXTENSION_VERSION."
 
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/app" "$DIST_DIR"
@@ -120,7 +123,10 @@ mkdir -p "$STAGE_DIR"
 cp -R "$INSTALLER_PATH" "$STAGE_DIR/"
 cp -R "$ROOT_DIR/extension" "$STAGE_DIR/VideoPocket Extension"
 cp "$ROOT_DIR/macos/INSTALL.txt" "$STAGE_DIR/Read Me.txt"
-ditto -c -k --sequesterRsrc --keepParent "$ROOT_DIR/extension" "$ZIP_PATH"
+(
+  cd "$ROOT_DIR/extension"
+  ditto -c -k --sequesterRsrc . "$ZIP_PATH"
+)
 
 hdiutil create -volname "VideoPocket $VERSION" -srcfolder "$STAGE_DIR"   -ov -format UDZO "$DMG_PATH"
 codesign --force --timestamp --sign "$SIGN_IDENTITY" "$DMG_PATH"
