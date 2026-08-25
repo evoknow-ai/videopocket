@@ -1,4 +1,5 @@
 import AppKit
+import Darwin
 import Foundation
 
 @main
@@ -116,6 +117,32 @@ final class VideoPocketInstaller: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func runProcess(_ executable: String, arguments: [String]) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            // A missing legacy process or service is an expected migration state.
+        }
+    }
+
+    private func stopLegacyHelper() {
+        let service = "gui/\(getuid())/com.videopocket.helper"
+        runProcess("/bin/launchctl", arguments: ["bootout", service])
+        runProcess("/usr/bin/pkill", arguments: ["-f", "Library/Application Support/VideoPocket/videopocket_helper.py"])
+
+        let launchAgents = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/LaunchAgents")
+        for name in ["com.videopocket.helper.plist", "com.videopocket.helper.plist.disabled"] {
+            try? FileManager.default.removeItem(at: launchAgents.appendingPathComponent(name))
+        }
+    }
+
     private func install() throws {
         guard let payload = Bundle.main.url(
             forResource: "VideoPocket Helper",
@@ -126,7 +153,8 @@ final class VideoPocketInstaller: NSObject, NSApplicationDelegate {
         }
 
         let target = URL(fileURLWithPath: "/Applications/VideoPocket Helper.app")
-        reportProgress(1, status: "Closing previous version…", detail: "Stopping any running VideoPocket Helper safely.")
+        reportProgress(1, status: "Closing previous version…", detail: "Removing the legacy background service and stopping the old Helper.")
+        stopLegacyHelper()
         NSRunningApplication.runningApplications(withBundleIdentifier: "us.eatsleepai.videopocket.helper")
             .forEach { $0.terminate() }
 

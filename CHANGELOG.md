@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.7 - 2026-08-25
+
+- Automatically unloads and removes the legacy Python LaunchAgent before installing the current Mac Helper.
+- Prevents a legacy `KeepAlive` process from occupying the Helper port after an upgrade.
+- Limits the custom update banner to Mac Helper updates; Chrome Web Store updates remain automatic.
+- Labels Helper updates clearly and directs only Helper downloads to GitHub Releases.
+- Reads the Credits & About version directly from the extension manifest.
+
 ## 0.4.6 - 2026-08-16
 
 - Fixed the **Errors** panel and download-progress polling when Chrome omits the extension origin on local GET requests.

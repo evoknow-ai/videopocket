@@ -29,8 +29,8 @@ async function checkUpdate() {
   const result = await chrome.runtime.sendMessage({ type: "CHECK_UPDATE" }).catch(() => null);
   if (!result?.available) return;
   document.querySelector("#update").hidden = false;
-  document.querySelector("#update-version").textContent = `Version ${result.version}`;
-  document.querySelector("#update-link").href = result.releaseUrl;
+  document.querySelector("#update-version").textContent = `Version ${result.helperVersion || result.version}`;
+  document.querySelector("#update-link").href = result.helperReleaseUrl || result.releaseUrl;
   document.querySelector("#update-changelog").href = result.changelogUrl;
 }
 
