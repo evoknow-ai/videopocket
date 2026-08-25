@@ -1,6 +1,8 @@
 {
   "version": "0.4.6",
+  "extensionVersion": "0.4.6",
   "helperVersion": "0.4.6",
+  "helperReleaseUrl": "https://github.com/evoknow-ai/videopocket/releases/latest",
   "releaseUrl": "https://github.com/evoknow-ai/videopocket/releases/latest",
   "changelogUrl": "https://github.com/evoknow-ai/videopocket/blob/main/CHANGELOG.md"
 }
