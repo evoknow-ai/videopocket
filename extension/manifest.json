@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VideoPocket",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Save videos and Instagram images you are authorized to download from supported social posts.",
   "permissions": ["activeTab", "alarms", "downloads", "storage", "scripting"],
   "host_permissions": [
