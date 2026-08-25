@@ -123,8 +123,12 @@ final class VideoPocketInstaller: NSObject, NSApplicationDelegate {
         process.arguments = arguments
         process.standardOutput = Pipe()
         process.standardError = Pipe()
-        try? process.run()
-        process.waitUntilExit()
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            // A missing legacy process or service is an expected migration state.
+        }
     }
 
     private func stopLegacyHelper() {
