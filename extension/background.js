@@ -123,10 +123,26 @@ async function updateStatus(helperVersion) {
     const response = await fetch(`${UPDATE_MANIFEST}?t=${Math.floor(Date.now() / 3600000)}`, { cache: "no-store" });
     if (!response.ok) throw new Error("Update check unavailable");
     const release = await response.json();
-    const available = isNewer(release.version, currentExtension) || Boolean(helperVersion && isNewer(release.helperVersion || release.version, helperVersion));
+    const latestExtension = release.extensionVersion || release.version;
+    const latestHelper = release.helperVersion || release.version;
+    const extensionAvailable = isNewer(latestExtension, currentExtension);
+    const helperAvailable = Boolean(helperVersion && isNewer(latestHelper, helperVersion));
+
+    // Chrome Web Store installations update the extension automatically. The
+    // custom notice is only for the separately installed Mac Helper.
+    const available = helperAvailable;
     await chrome.action.setBadgeText({ text: available ? "UP" : "" });
     if (available) await chrome.action.setBadgeBackgroundColor({ color: "#d92d20" });
-    return { ok: true, available, currentExtension, currentHelper: helperVersion, ...release, changelogUrl: release.changelogUrl || CHANGELOG_URL };
+    return {
+      ok: true,
+      available,
+      helperAvailable,
+      extensionAvailable,
+      currentExtension,
+      currentHelper: helperVersion,
+      ...release,
+      changelogUrl: release.changelogUrl || CHANGELOG_URL
+    };
   } catch (error) {
     return { ok: false, available: false, currentExtension, currentHelper: helperVersion, error: error.message, changelogUrl: CHANGELOG_URL };
   }
